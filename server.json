@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.beakdo/defi-customs-mcp-hub",
+  "description": "Remote Streamable HTTP MCP servers for DeFi funding arbitrage (Bitget, Hyperliquid, Pendle), prediction markets, Korea import customs, and B2B intelligence.",
+  "version": "2.1.0",
+  "repository": {
+    "url": "https://github.com/BeakDo/defi-customs-mcp-hub",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://defi-route-intel.b2bintel-edge.workers.dev/mcp"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://smart-deal-calculator.b2bintel-edge.workers.dev/mcp"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://b2b-intel-rapidapi-worker.b2bintel-edge.workers.dev/mcp"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://email-security-deliverability-grader.b2bintel-edge.workers.dev/mcp"
+    }
+  ]
+}
