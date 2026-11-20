@@ -1,0 +1,64 @@
+{
+  "name": "K-Beauty Hwahae & Olive Young Global Sourcing Margin Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "days", "daysInterval": 3, "triggerAtHour": 8 }]
+        }
+      },
+      "id": "schedule-every-3d",
+      "name": "Every 3 Days 8AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/BeakDo~kbeauty-oliveyoung-hwahae-scraper/run-sync-get-dataset-items",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{ "name": "token", "value": "={{ $env.APIFY_API_TOKEN }}" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"includeReviewTopicsAndMargins\": true,\n  \"minReviewCount\": 50,\n  \"targetMarkupMultiplier\": 2.2,\n  \"maxProducts\": 30\n}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "run-apify-kbeauty",
+      "name": "Run BeakDo K-Beauty Rankings & Margin Actor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "high-margin-filter",
+              "leftValue": "={{ $json.estimated_gross_margin_usd }}",
+              "rightValue": 6,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filter-high-margin-skus",
+      "name": "Filter $6+ Gross Margin SKUs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [740, 300]
+    }
+  ],
+  "connections": {
+    "Every 3 Days 8AM": {
+      "main": [[{ "node": "Run BeakDo K-Beauty Rankings & Margin Actor", "type": "main", "index": 0 }]]
+    },
+    "Run BeakDo K-Beauty Rankings & Margin Actor": {
+      "main": [[{ "node": "Filter $6+ Gross Margin SKUs", "type": "main", "index": 0 }]]
+    }
+  }
+}
