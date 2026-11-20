@@ -1,0 +1,65 @@
+{
+  "name": "Weekly Luma Tech Events & Gumroad Creator B2B Sponsor Leads (MX-Verified)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "weeks", "weeksInterval": 1, "triggerAtDay": [1], "triggerAtHour": 9 }]
+        }
+      },
+      "id": "schedule-monday-9am",
+      "name": "Every Monday 9AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/BeakDo~luma-gumroad-creator-leads-scraper/run-sync-get-dataset-items",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{ "name": "token", "value": "={{ $env.APIFY_API_TOKEN }}" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"includeLumaEvents\": true,\n  \"includeGumroadCreators\": true,\n  \"gumroadKeywords\": [\"saas template\", \"ai workflow\"],\n  \"verifyDomainMx\": true,\n  \"maxItems\": 40\n}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "run-apify-luma-gumroad",
+      "name": "Run BeakDo Luma & Gumroad Leads Actor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [
+            {
+              "id": "mx-verified-check",
+              "leftValue": "={{ $json.is_verified_b2b_lead }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filter-verified-b2b",
+      "name": "Keep Verified MX & Corporate Leads",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [740, 300]
+    }
+  ],
+  "connections": {
+    "Every Monday 9AM": {
+      "main": [[{ "node": "Run BeakDo Luma & Gumroad Leads Actor", "type": "main", "index": 0 }]]
+    },
+    "Run BeakDo Luma & Gumroad Leads Actor": {
+      "main": [[{ "node": "Keep Verified MX & Corporate Leads", "type": "main", "index": 0 }]]
+    }
+  }
+}
