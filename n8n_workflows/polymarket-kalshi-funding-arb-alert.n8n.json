@@ -1,0 +1,64 @@
+{
+  "name": "Hourly Polymarket-Kalshi Arbitrage & DeFi Funding Carry Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 2 }]
+        }
+      },
+      "id": "schedule-2h",
+      "name": "Every 2 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/BeakDo~defi-yield-funding-arbitrage-scraper/run-sync-get-dataset-items",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{ "name": "token", "value": "={{ $env.APIFY_API_TOKEN }}" }]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"includeFundingArbitrage\": true,\n  \"includeInstitutionalStableYields\": true,\n  \"maxSignals\": 25\n}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "run-apify-defi-arb",
+      "name": "Scan Polymarket, Kalshi & Perp Spreads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "high-apr-filter",
+              "leftValue": "={{ $json.annualized_spread_or_apy_pct }}",
+              "rightValue": 15,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filter-high-yield",
+      "name": "Keep 15%+ Spreads & Prediction Gaps",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [740, 300]
+    }
+  ],
+  "connections": {
+    "Every 2 Hours": {
+      "main": [[{ "node": "Scan Polymarket, Kalshi & Perp Spreads", "type": "main", "index": 0 }]]
+    },
+    "Scan Polymarket, Kalshi & Perp Spreads": {
+      "main": [[{ "node": "Keep 15%+ Spreads & Prediction Gaps", "type": "main", "index": 0 }]]
+    }
+  }
+}
